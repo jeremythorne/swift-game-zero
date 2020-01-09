@@ -1,0 +1,46 @@
+public enum KeyCode:Int {
+    case a = 4
+    case b = 5
+    case c = 6
+    case d = 7
+    case e = 8
+    case f = 9
+    case g = 10
+    case h = 11
+    case i = 12
+    case j = 13
+    case k = 14
+    case l = 15
+    case m = 16
+    case n = 17
+    case o = 18
+    case p = 19
+    case q = 20
+    case r = 21
+    case s = 22
+    case t = 23
+    case u = 24
+    case v = 25
+    case w = 26
+    case x = 27
+    case y = 28
+    case z = 29
+    case one = 30
+    case two = 31
+    case three = 32
+    case four = 33
+    case five = 34
+    case size = 35
+    case seven = 36
+    case eight = 37
+    case nine = 38
+    case zero = 39
+    case enter = 40
+    case escape = 41
+    case space = 44
+    case right = 79
+    case left = 80
+    case down = 81
+    case up = 82
+}
+

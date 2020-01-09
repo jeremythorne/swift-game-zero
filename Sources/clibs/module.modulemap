@@ -1,0 +1,13 @@
+
+module CSDL [system] {
+    header "/usr/include/SDL2/SDL.h"
+    link "SDL2"
+    export *
+}
+
+module CLIBPNG [system] {
+    header "macros.h"
+    header "/usr/include/libpng16/png.h"
+    link "png16"
+    export *
+}
