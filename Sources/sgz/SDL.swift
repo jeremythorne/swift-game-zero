@@ -41,8 +41,8 @@ class Window {
     var window:OpaquePointer?
     init(width:Int, height:Int) throws {
         self.window = SDL_CreateWindow("hello",
-                                       0,//SDL_WINDOWPOS_UNDEFINED,
-                                       0,//SDL_WINDOWPOS_UNDEFINED,
+                                       0x2FFF0000,//SDL_WINDOWPOS_CENTERED,
+                                       0x2FFF0000,//SDL_WINDOWPOS_CENTERED,
                                        Int32(width),
                                        Int32(height),
                                        0)

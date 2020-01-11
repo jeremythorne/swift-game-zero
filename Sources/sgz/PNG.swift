@@ -37,8 +37,6 @@ class PNG {
         let color_type = png_get_color_type(png, info)
         let bit_depth = png_get_bit_depth(png, info)
 
-        print("image:", self.width, self.height)
-
         if bit_depth == 16 {
             png_set_strip_16(png)
         }
@@ -77,7 +75,6 @@ class PNG {
             row_pointers.append(p + index * rowbytes)
         }
 
-        print("reading image")
         let orp = Optional(UnsafeMutablePointer(mutating:row_pointers))
         png_read_image(png, orp)
     }
