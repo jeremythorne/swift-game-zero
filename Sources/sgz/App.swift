@@ -173,4 +173,12 @@ public class App {
         }
         return keyboard.pressed(key)
     }
+
+    public func loadSound(name:String) -> Sound? {
+        guard let sdl = self.sdl else {
+            return nil
+        }
+        let filename = "sounds/" + name + ".ogg"
+        return sdl.loadSound(filename:filename)
+    }
 }

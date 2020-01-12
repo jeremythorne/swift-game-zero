@@ -24,6 +24,7 @@ class MyGame : sgz.Game {
         for _ in 1...10 {
             balls.append(Ball(image:"hello", center:(app.width / 2, app.height / 2)))
         }
+        app.loadSound(name:"bounce0")
     }
 
     override func update(app:sgz.App) {

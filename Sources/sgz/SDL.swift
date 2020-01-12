@@ -32,6 +32,18 @@ class SDL {
         return Event(sdl_event:sdl_event)
     }
 
+    func loadSound(filename:String) -> Sound? {
+        do {
+            let v = try VorbisFile(filename:filename)
+            return Sound()
+        } catch VorbisFile.error.error(let message) {
+            print("vorbis error:" + message)
+        } catch {
+            print("unknown error")
+        }
+        return nil
+    }
+
     deinit {
         SDL_Quit()
     }
@@ -164,4 +176,7 @@ class Renderer {
     deinit {
         SDL_DestroyRenderer(self.renderer)
     }
+}
+
+public class Sound {
 }

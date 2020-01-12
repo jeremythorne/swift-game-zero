@@ -11,3 +11,9 @@ module CLIBPNG [system] {
     link "png16"
     export *
 }
+
+module CVorbisFile [system] {
+    header "/usr/include/vorbis/vorbisfile.h"
+    link "vorbisfile"
+    export *
+}
