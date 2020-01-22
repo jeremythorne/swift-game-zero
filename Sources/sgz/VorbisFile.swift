@@ -1,6 +1,7 @@
 import CVorbisFile
 
 class VorbisFile {
+    var samples = [Int16]()
     enum error:Error {
         case error(message:String)
     }
@@ -25,6 +26,10 @@ class VorbisFile {
                 print("stream error: \(ret)")
             } else {
                 print("\(ret) bytes of valid data")
+                let count:Int = ret / 2
+                p.withMemoryRebound(to: Int16.self, capacity:count) {
+                    self.samples += Array(UnsafeBufferPointer(start:$0, count:count))
+                }
             }
         }
         print("done")

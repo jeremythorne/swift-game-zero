@@ -15,13 +15,19 @@ enum SDLError: Error {
 
 class SDL {
     init() throws {
-        if SDL_Init(SDL_INIT_VIDEO) < 0 {
+        if SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0 {
             throw SDLError.error(message:"couldn't init " + getError())
         }
     }
 
     func createWindow(width:Int, height:Int) throws -> Window {
         return try Window(width:width, height:height)
+    }
+
+    func createAudio() throws -> Audio {
+        let audio = Audio()
+        try audio.start()
+        return audio
     }
 
     func pollEvent() -> Event? {
@@ -32,10 +38,74 @@ class SDL {
         return Event(sdl_event:sdl_event)
     }
 
+    deinit {
+        SDL_Quit()
+    }
+}
+
+func bridge<T : AnyObject>(obj : T) -> UnsafeMutableRawPointer {
+    return UnsafeMutableRawPointer(Unmanaged.passUnretained(obj).toOpaque())
+}
+
+func bridge<T : AnyObject>(ptr : UnsafeMutableRawPointer) -> T {
+    return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
+}
+
+func audioCallback(_ userdata: UnsafeMutableRawPointer?, _ stream:UnsafeMutablePointer<UInt8>?,_ len:Int32) {
+    guard let raw_p = userdata else {
+        return
+    }
+    guard let buffer_p = stream else {
+        return
+    }
+    let audio:Audio = bridge(ptr:raw_p)
+    let count = Int(len) / MemoryLayout<Int16>.size
+
+    buffer_p.withMemoryRebound(to: Int16.self, capacity: count) {
+        var chunk = 0
+        var buffer = Array(UnsafeBufferPointer(start:$0, count:count))
+        if let sound = audio.sound {
+            chunk = min(count, max(0, sound.samples.count - audio.offset))
+            buffer[0..<chunk] = sound.samples[audio.offset..<(audio.offset + chunk)]
+        }
+
+        if chunk < count {
+            buffer[chunk..<count] = audio.zeros[0..<(count - chunk)]
+        }
+        audio.offset += count
+    }
+}
+
+class Audio {
+    var dev:SDL_AudioDeviceID = 0
+    var have = SDL_AudioSpec()
+    var sound:Sound?
+    var offset = 0
+    var zeros = [Int16]()
+
+    init() {
+    }
+
+    func start() throws {
+        var want = SDL_AudioSpec()
+        want.freq = 44100
+        want.format = UInt16(AUDIO_S16LSB)
+        want.channels = 2
+        want.samples = 4096
+        want.callback = audioCallback
+        want.userdata = bridge(obj:self)
+        self.dev = SDL_OpenAudioDevice(nil, 0, &want, &self.have, 0)
+        guard self.dev != 0 else {
+            throw SDLError.error(message: "couldn't open audio device")
+        }
+        self.zeros = Array(repeating:0, count:Int(self.have.samples))
+        SDL_PauseAudioDevice(self.dev, 0)
+    }
+
     func loadSound(filename:String) -> Sound? {
         do {
             let v = try VorbisFile(filename:filename)
-            return Sound()
+            return Sound(samples:v.samples)
         } catch VorbisFile.error.error(let message) {
             print("vorbis error:" + message)
         } catch {
@@ -44,8 +114,15 @@ class SDL {
         return nil
     }
 
+    func play(sound:Sound) {
+        SDL_LockAudioDevice(self.dev)
+        self.sound = sound
+        self.offset = 0
+        SDL_UnlockAudioDevice(self.dev)
+    }
+
     deinit {
-        SDL_Quit()
+        SDL_CloseAudioDevice(self.dev)
     }
 }
 
@@ -179,4 +256,8 @@ class Renderer {
 }
 
 public class Sound {
+    var samples = [Int16]()
+    init(samples:[Int16]) {
+        self.samples = samples
+    }
 }

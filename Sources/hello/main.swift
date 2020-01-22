@@ -24,12 +24,12 @@ class MyGame : sgz.Game {
         for _ in 1...10 {
             balls.append(Ball(image:"hello", center:(app.width / 2, app.height / 2)))
         }
-        app.loadSound(name:"bounce0")
     }
 
     override func update(app:sgz.App) {
         if app.pressed(sgz.KeyCode.left) {
             print("left pressed")
+            app.playSound(name:"bounce0")
         } else if app.pressed(sgz.KeyCode.right) {
             print("right pressed")
         }

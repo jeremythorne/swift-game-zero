@@ -50,8 +50,10 @@ public class App {
     var sdl:SDL? = nil
     var keyboard:Keyboard? = nil
     var renderer:Renderer? = nil
+    var audio:Audio? = nil
     var shouldQuit:Bool = false
     var imageCache = [String: Image]()
+    var soundCache = [String: Sound]()
 
     public init() {
         do {
@@ -74,7 +76,7 @@ public class App {
         do {
             let window = try sdl.createWindow(width: width, height: height)
             self.renderer = try window.createRenderer()
-
+            self.audio = try sdl.createAudio()
             self.shouldQuit = false
 
             setup(game)
@@ -175,10 +177,33 @@ public class App {
     }
 
     public func loadSound(name:String) -> Sound? {
-        guard let sdl = self.sdl else {
+        let filename = "sounds/" + name + ".ogg"
+        if let sound = self.soundCache[name] {
+            return sound
+        }
+        guard let audio = self.audio else {
+            print("no audio")
+            return nil
+	    }
+        guard let sound = audio.loadSound(filename:filename) else {
+            print("failed to load \(filename)")
             return nil
         }
-        let filename = "sounds/" + name + ".ogg"
-        return sdl.loadSound(filename:filename)
+        self.soundCache[name] = sound
+        return sound
+    }
+
+    public func playSound(name:String) {
+        self.playSound(sound:self.loadSound(name:name))
+    }
+
+    public func playSound(sound:Sound?) {
+        guard let s = sound else {
+            return
+        }
+        guard let audio = self.audio else {
+            return
+        }
+        audio.play(sound:s)
     }
 }
