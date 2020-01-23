@@ -29,7 +29,7 @@ class MyGame : sgz.Game {
     override func update(app:sgz.App) {
         if app.pressed(sgz.KeyCode.left) {
             print("left pressed")
-            app.playSound(name:"bounce0")
+            app.playSound(name:"score_goal0")
         } else if app.pressed(sgz.KeyCode.right) {
             print("right pressed")
         }

@@ -51,26 +51,27 @@ func bridge<T : AnyObject>(ptr : UnsafeMutableRawPointer) -> T {
     return Unmanaged<T>.fromOpaque(ptr).takeUnretainedValue()
 }
 
-func audioCallback(_ userdata: UnsafeMutableRawPointer?, _ stream:UnsafeMutablePointer<UInt8>?,_ len:Int32) {
-    guard let raw_p = userdata else {
+func audioCallback(_ userdata_o: UnsafeMutableRawPointer?, _ stream_o:UnsafeMutablePointer<UInt8>?,_ len:Int32) {
+    guard let userdata = userdata_o else {
         return
     }
-    guard let buffer_p = stream else {
+    guard let stream = stream_o else {
         return
     }
-    let audio:Audio = bridge(ptr:raw_p)
+    let audio:Audio = bridge(ptr:userdata)
     let count = Int(len) / MemoryLayout<Int16>.size
 
-    buffer_p.withMemoryRebound(to: Int16.self, capacity: count) {
-        var chunk = 0
+    stream.withMemoryRebound(to: Int16.self, capacity: count) {
         var buffer = Array(UnsafeBufferPointer(start:$0, count:count))
-        if let sound = audio.sound {
-            chunk = min(count, max(0, sound.samples.count - audio.offset))
-            buffer[0..<chunk] = sound.samples[audio.offset..<(audio.offset + chunk)]
-        }
-
-        if chunk < count {
-            buffer[chunk..<count] = audio.zeros[0..<(count - chunk)]
+        for i in 0..<count {    
+            buffer[i] = 0
+            let offset = i + audio.offset
+            if let sound = audio.sound {
+                let sound_offset = offset - audio.sound_start
+                if sound_offset < sound.samples.count {
+                    buffer[i] += sound.samples[sound_offset]
+                }
+            }
         }
         audio.offset += count
     }
@@ -80,8 +81,8 @@ class Audio {
     var dev:SDL_AudioDeviceID = 0
     var have = SDL_AudioSpec()
     var sound:Sound?
+    var sound_start = 0
     var offset = 0
-    var zeros = [Int16]()
 
     init() {
     }
@@ -98,7 +99,7 @@ class Audio {
         guard self.dev != 0 else {
             throw SDLError.error(message: "couldn't open audio device")
         }
-        self.zeros = Array(repeating:0, count:Int(self.have.samples))
+        print(self.have.freq, self.have.format, self.have.channels, self.have.samples)
         SDL_PauseAudioDevice(self.dev, 0)
     }
 
@@ -117,7 +118,8 @@ class Audio {
     func play(sound:Sound) {
         SDL_LockAudioDevice(self.dev)
         self.sound = sound
-        self.offset = 0
+        self.sound_start = self.offset
+        print("play sound", sound.samples.count, self.sound_start)
         SDL_UnlockAudioDevice(self.dev)
     }
 
