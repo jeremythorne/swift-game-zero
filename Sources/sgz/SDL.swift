@@ -216,7 +216,7 @@ class Renderer {
     func loadImage(filename:String) -> Texture? {
         do {
             let png = try PNG(filename:filename)
-            let texture = SDL_CreateTexture(self.renderer, UInt32(SDL_PIXELFORMAT_ABGR8888),
+            let texture = SDL_CreateTexture(self.renderer, UInt32(SDL_PIXELFORMAT_ABGR8888.rawValue),
                                             Int32(SDL_TEXTUREACCESS_STATIC.rawValue),
                                             Int32(png.width),
                                             Int32(png.height))

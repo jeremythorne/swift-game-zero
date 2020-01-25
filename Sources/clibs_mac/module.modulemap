@@ -1,0 +1,19 @@
+
+module CSDL [system] {
+    header "/usr/local/include/SDL2/SDL.h"
+    link "SDL2"
+    export *
+}
+
+module CLIBPNG [system] {
+    header "macros.h"
+    header "/usr/local/include/libpng16/png.h"
+    link "png16"
+    export *
+}
+
+module CVorbisFile [system] {
+    header "/usr/local/include/vorbis/vorbisfile.h"
+    link "vorbisfile"
+    export *
+}
