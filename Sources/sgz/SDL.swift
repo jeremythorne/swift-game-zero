@@ -214,10 +214,18 @@ class Renderer {
     func loadImage(filename:String) -> Texture? {
         do {
             let png = try PNG(filename:filename)
+#if os(Linux)
+            let texture = SDL_CreateTexture(self.renderer, UInt32(SDL_PIXELFORMAT_ABGR8888),
+                                            Int32(SDL_TEXTUREACCESS_STATIC.rawValue),
+                                            Int32(png.width),
+                                            Int32(png.height))
+#else
+// mac os
             let texture = SDL_CreateTexture(self.renderer, UInt32(SDL_PIXELFORMAT_ABGR8888.rawValue),
                                             Int32(SDL_TEXTUREACCESS_STATIC.rawValue),
                                             Int32(png.width),
                                             Int32(png.height))
+#endif
             if texture == nil {
                 print("failed to create texture")
                 return nil
