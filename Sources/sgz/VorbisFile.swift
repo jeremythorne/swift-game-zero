@@ -25,14 +25,12 @@ class VorbisFile {
             } else if ret < 0 {
                 print("stream error: \(ret)")
             } else {
-                print("\(ret) bytes of valid data")
                 let count:Int = ret / 2
                 p.withMemoryRebound(to: Int16.self, capacity:count) {
                     self.samples += Array(UnsafeBufferPointer(start:$0, count:count))
                 }
             }
         }
-        print("done")
         defer {
             ov_clear(&vf)
         }

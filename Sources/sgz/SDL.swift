@@ -62,7 +62,7 @@ func audioCallback(_ userdata_o: UnsafeMutableRawPointer?, _ stream_o:UnsafeMuta
     let count = Int(len) / MemoryLayout<Int16>.size
 
     stream.withMemoryRebound(to: Int16.self, capacity: count) {
-        var buffer = Array(UnsafeBufferPointer(start:$0, count:count))
+        let buffer = UnsafeMutableBufferPointer(start:$0, count:count)
         for i in 0..<count {    
             buffer[i] = 0
             let offset = i + audio.offset
@@ -99,7 +99,6 @@ class Audio {
         guard self.dev != 0 else {
             throw SDLError.error(message: "couldn't open audio device")
         }
-        print(self.have.freq, self.have.format, self.have.channels, self.have.samples)
         SDL_PauseAudioDevice(self.dev, 0)
     }
 
@@ -119,7 +118,6 @@ class Audio {
         SDL_LockAudioDevice(self.dev)
         self.sound = sound
         self.sound_start = self.offset
-        print("play sound", sound.samples.count, self.sound_start)
         SDL_UnlockAudioDevice(self.dev)
     }
 
