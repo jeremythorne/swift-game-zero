@@ -81,6 +81,7 @@ public class App {
 
             setup(game)
 
+            var time = sdl.time()
             while !self.shouldQuit {
                 while let event = sdl.pollEvent() {
                     switch event {
@@ -96,8 +97,15 @@ public class App {
                 if self.shouldQuit {
                     break
                 }
+
                 update(game)
                 draw(game)
+
+                let diff = sdl.time() - time
+                if diff < 16 {
+                    sdl.sleep(ms: 16 - diff)
+                }
+                time = sdl.time()
             }
         } catch SDLError.error(let message) {
             print ("error:", message)

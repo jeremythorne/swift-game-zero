@@ -38,6 +38,14 @@ class SDL {
         return Event(sdl_event:sdl_event)
     }
 
+    func time() -> Uint32 {
+        return SDL_GetTicks()
+    }
+
+    func sleep(ms: Uint32) {
+        SDL_Delay(ms)
+    }
+
     deinit {
         SDL_Quit()
     }
