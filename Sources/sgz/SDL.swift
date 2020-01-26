@@ -74,22 +74,32 @@ func audioCallback(_ userdata_o: UnsafeMutableRawPointer?, _ stream_o:UnsafeMuta
         for i in 0..<count {    
             buffer[i] = 0
             let offset = i + audio.offset
-            if let sound = audio.sound {
-                let sound_offset = offset - audio.sound_start
+            for playing in audio.sounds {
+                let sound = playing.sound
+                let sound_offset = offset - playing.start
                 if sound_offset < sound.samples.count {
-                    buffer[i] += sound.samples[sound_offset]
+                    buffer[i] = Int16(min(Int(Int16.max), 
+                                          max(Int(Int16.min), Int(buffer[i]) + Int(sound.samples[sound_offset]))))
                 }
             }
         }
         audio.offset += count
     }
+
+    var still_playing = [(sound:Sound, start:Int)]()
+    for playing in audio.sounds {
+        let sound_offset = audio.offset - playing.start
+        if sound_offset < playing.sound.samples.count {
+            still_playing.append(playing)
+        }
+    }
+    audio.sounds = still_playing
 }
 
 class Audio {
     var dev:SDL_AudioDeviceID = 0
     var have = SDL_AudioSpec()
-    var sound:Sound?
-    var sound_start = 0
+    var sounds = [(sound:Sound, start:Int)]()
     var offset = 0
 
     init() {
@@ -124,8 +134,7 @@ class Audio {
 
     func play(sound:Sound) {
         SDL_LockAudioDevice(self.dev)
-        self.sound = sound
-        self.sound_start = self.offset
+        self.sounds.append((sound, self.offset))
         SDL_UnlockAudioDevice(self.dev)
     }
 
