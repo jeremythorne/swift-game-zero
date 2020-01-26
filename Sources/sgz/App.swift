@@ -11,19 +11,26 @@ open class Game {
     }
 }
 
+public enum Anchor {
+    case top, bottom, left, right, middle, center
+}
+
 open class Actor {
     public var image:String = ""
     public var x:Float = 0
     public var y:Float = 0
+    public var anchor:(x:Anchor, y:Anchor)
 
-    public init(image:String, center:(x:Float, y:Float)) {
+    public init(image:String, pos:(x:Float, y:Float),
+                anchor:(x:Anchor, y:Anchor) = (Anchor.center, Anchor.center)) {
         self.image = image
-        self.x = center.x
-        self.y = center.y
+        self.x = pos.x
+        self.y = pos.y
+        self.anchor = anchor
     }
 
     public func draw (app:App) {
-        app.blit(name:self.image, center:(self.x, self.y))
+        app.blit(name:self.image, pos:(self.x, self.y), anchor:self.anchor)
     }
 }
 
@@ -155,15 +162,23 @@ public class App {
         }
     }
 
-    public func blit(name:String, pos:(x:Float, y:Float)) {
-        self.blit(image:self.loadImage(name:name), pos:pos)
+    func offset(anchor:Anchor, size:Float) -> Float {
+        switch anchor {
+        case Anchor.top, Anchor.left:
+            return 0
+        case Anchor.bottom, Anchor.right:
+            return size
+        case Anchor.middle, Anchor.center:
+            return size / 2.0
+        }
     }
-
-    public func blit(name:String, center:(x:Float, y:Float)) {
+    
+    public func blit(name:String, pos:(x:Float, y:Float),
+                    anchor:(x:Anchor, y:Anchor) = (Anchor.left, Anchor.top)) {
         if let image = self.loadImage(name:name) {
-            let pos = (center.x - Float(image.width) / 2.0,
-                       center.y - Float(image.height) / 2.0)
-            self.blit(image:image, pos:pos)
+            let abs_pos = (pos.x - offset(anchor:anchor.x, size:Float(image.width)),
+                           pos.y - offset(anchor:anchor.y, size:Float(image.height)))
+            self.blit(image:image, pos:abs_pos)
         }
     }
 
