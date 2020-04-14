@@ -24,13 +24,20 @@ open class Actor {
     public init(image:String, pos:(x:Float, y:Float),
                 anchor:(x:Anchor, y:Anchor) = (Anchor.center, Anchor.center)) {
         self.image = image
-        self.x = pos.x
-        self.y = pos.y
+        x = pos.x
+        y = pos.y
         self.anchor = anchor
     }
 
     public func draw (app:App) {
-        app.blit(name:self.image, pos:(self.x, self.y), anchor:self.anchor)
+        app.blit(name:image, pos:(x, y), anchor:anchor)
+    }
+
+    public func width(app:App) -> Int {
+        guard let image = app.loadImage(name:self.image) else {
+            return 0
+        }
+        return image.width
     }
 }
 
@@ -54,18 +61,18 @@ public func run(width:Int, height:Int, game:Game) {
 public class App {
     public var width:Float = 0.0
     public var height:Float = 0.0
-    var sdl:SDL? = nil
-    var keyboard:Keyboard? = nil
-    var renderer:Renderer? = nil
-    var audio:Audio? = nil
+    var sdl:SDL?
+    var keyboard:Keyboard?
+    var renderer:Renderer?
+    var audio:Audio?
     var shouldQuit:Bool = false
     var imageCache = [String: Image]()
     var soundCache = [String: Sound]()
 
     public init() {
         do {
-            self.sdl = try SDL()
-            self.keyboard = Keyboard()
+            sdl = try SDL()
+            keyboard = Keyboard()
         } catch SDLError.error(let message) {
             print ("error:", message)
         }
@@ -82,26 +89,26 @@ public class App {
         self.height = Float(height)
         do {
             let window = try sdl.createWindow(width: width, height: height)
-            self.renderer = try window.createRenderer()
-            self.audio = try sdl.createAudio()
-            self.shouldQuit = false
+            renderer = try window.createRenderer()
+            audio = try sdl.createAudio()
+            shouldQuit = false
 
             setup(game)
 
             var time = sdl.time()
-            while !self.shouldQuit {
+            while !shouldQuit {
                 while let event = sdl.pollEvent() {
                     switch event {
                     case .quit:
-                        self.shouldQuit = true
+                        shouldQuit = true
                     default:
                         continue
                     }
                 }
                 if pressed(KeyCode.escape) {
-                    self.shouldQuit = true
+                    shouldQuit = true
                 }
-                if self.shouldQuit {
+                if shouldQuit {
                     break
                 }
 
@@ -140,7 +147,7 @@ public class App {
     
     public func loadImage(name:String) -> Image? {
         let filename = "images/" + name + ".png"
-        if let image = self.imageCache[name] {
+        if let image = imageCache[name] {
             return image
         }
         guard let renderer = self.renderer else {
@@ -152,7 +159,7 @@ public class App {
             return nil
         }
         let image = Image(width:texture.width, height:texture.height, texture:texture)
-        self.imageCache[name] = image
+        imageCache[name] = image
         return image
     }
 
@@ -164,21 +171,21 @@ public class App {
 
     func offset(anchor:Anchor, size:Float) -> Float {
         switch anchor {
-        case Anchor.top, Anchor.left:
+        case .top, .left:
             return 0
-        case Anchor.bottom, Anchor.right:
+        case .bottom, .right:
             return size
-        case Anchor.middle, Anchor.center:
+        case .middle, .center:
             return size / 2.0
         }
     }
     
     public func blit(name:String, pos:(x:Float, y:Float),
                     anchor:(x:Anchor, y:Anchor) = (Anchor.left, Anchor.top)) {
-        if let image = self.loadImage(name:name) {
+        if let image = loadImage(name:name) {
             let abs_pos = (pos.x - offset(anchor:anchor.x, size:Float(image.width)),
                            pos.y - offset(anchor:anchor.y, size:Float(image.height)))
-            self.blit(image:image, pos:abs_pos)
+            blit(image:image, pos:abs_pos)
         }
     }
 
@@ -201,7 +208,7 @@ public class App {
 
     public func loadSound(name:String) -> Sound? {
         let filename = "sounds/" + name + ".ogg"
-        if let sound = self.soundCache[name] {
+        if let sound = soundCache[name] {
             return sound
         }
         guard let audio = self.audio else {
@@ -212,12 +219,12 @@ public class App {
             print("failed to load \(filename)")
             return nil
         }
-        self.soundCache[name] = sound
+        soundCache[name] = sound
         return sound
     }
 
     public func playSound(name:String) {
-        self.playSound(sound:self.loadSound(name:name))
+        playSound(sound:loadSound(name:name))
     }
 
     public func playSound(sound:Sound?) {
