@@ -30,7 +30,9 @@ open class Actor {
     }
 
     public func draw (app:App) {
-        app.blit(name:image, pos:(x, y), anchor:anchor)
+        if image != "" {
+            app.blit(name:image, pos:(x, y), anchor:anchor)
+        }
     }
 
     public func width(app:App) -> Int {
